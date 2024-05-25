@@ -6,14 +6,23 @@
 
     <groupId>org.badfish.theworldshop</groupId>
     <artifactId>TheWorldShop</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>cn.nukkit</groupId>
             <artifactId>Nukkit</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath> ${project.basedir}/lib/Nukkit-PM1E.jar</systemPath>
+            <systemPath>${project.basedir}/lib/Nukkit-PM1E.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -26,7 +35,7 @@
             <artifactId>economyapi</artifactId>
             <version>2.0.0-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/EconomyAPI_2.0.2.jar</systemPath>
+            <systemPath>${project.basedir}/lib/EconomyAPI-2.0.2.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>Money</groupId>
@@ -42,6 +51,22 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/PlayerPoints_v1.2.0.jar</systemPath>
         </dependency>
+
+        <dependency>
+            <groupId>cn.ankele.plugin.MagicItem</groupId>
+            <artifactId>MagicItem</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/MagicItem-1.1.0.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>RcRPG.Main</groupId>
+            <artifactId>RcRPG</artifactId>
+            <version>1.0.5</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/RcRPG-1.0.5-MOT.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <build>
@@ -52,16 +77,12 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
-
-
-
 
 
 </project>

@@ -22,3 +22,18 @@ sell-money-min: 0.1
 #
 sell-money-max: 100000
 
+#
+# 限制 /tw add 交易物品
+#
+limit-tradable:
+  # 启用可交易判断
+  # RcRPG、MagicItem 配置中 tradable: true
+  # 以及普通物品 tag tradable 为 true 的物品才可以上架
+  enable: true
+  # 允许无 tag 物品进行交易
+  allow-no-tag: false
+  # 允许任务书进行交易 RcTaskBook
+  allow-taskbook: false
+  # 禁止物品列表的ID，仅当 `allow-no-tag` 为 true 时有效
+  ban-item-list:
+    - "minecraft:command_block"
