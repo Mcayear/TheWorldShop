@@ -8,13 +8,10 @@ import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.inventory.Inventory;
-
 import cn.nukkit.inventory.InventoryHolder;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemBookWritten;
 import cn.nukkit.nbt.tag.CompoundTag;
-import cn.nukkit.utils.Config;
-import cn.nukkit.utils.ConfigSection;
 import cn.nukkit.utils.TextFormat;
 import org.badfish.theworldshop.TheWorldShopMainClass;
 import org.badfish.theworldshop.items.ItemType;
@@ -22,7 +19,6 @@ import org.badfish.theworldshop.items.MoneySellItem;
 import org.badfish.theworldshop.items.ShopItem;
 import org.badfish.theworldshop.items.paneitem.defaultpanelitem.*;
 import org.badfish.theworldshop.items.paneitem.settingpanelitem.*;
-import org.badfish.theworldshop.language.BaseLanguage;
 import org.badfish.theworldshop.language.TransferVariable;
 import org.badfish.theworldshop.manager.PlayerInfoManager;
 import org.badfish.theworldshop.manager.PlayerSellItemManager;
@@ -31,7 +27,6 @@ import org.badfish.theworldshop.panel.lib.AbstractFakeInventory;
 import org.badfish.theworldshop.utils.LoadMoney;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

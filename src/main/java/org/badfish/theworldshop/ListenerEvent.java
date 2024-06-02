@@ -44,9 +44,9 @@ public class ListenerEvent implements Listener {
 
     private static final int MONEY_UI_NUMBER = 0x5014;
 
-    public static LinkedHashMap<Player,ShopItem> BUY_LOCK = new LinkedHashMap<>();
+    public static LinkedHashMap<Player, ShopItem> BUY_LOCK = new LinkedHashMap<>();
 
-    private static LinkedHashMap<Player,Item> SELL_LOCK = new LinkedHashMap<>();
+    private static LinkedHashMap<Player, Item> SELL_LOCK = new LinkedHashMap<>();
 
     private static ArrayList<Player> LOOK_MYSELF = new ArrayList<>();
 
@@ -56,84 +56,86 @@ public class ListenerEvent implements Listener {
 
     public static ArrayList<Player> LOOK_PLAYERS = new ArrayList<>();
 
-    private static LinkedHashMap<Player,Item> SELL_ITEM = new LinkedHashMap<>();
+    private static LinkedHashMap<Player, Item> SELL_ITEM = new LinkedHashMap<>();
 
     @EventHandler
-    public void onUp(PlayerSellItemEvent event){
+    public void onUp(PlayerSellItemEvent event) {
         ShopItem item = event.getItem();
         Player player = event.getPlayer();
 
-        if(player.isOp() && item.isRemove()){
+        if (player.isOp() && item.isRemove()) {
             //player.getInventory().removeItem(item.getDefaultItem());
-            player.sendMessage(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&r "+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellSuccess,event.getMoney(),0)));
+            player.sendMessage(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&r " + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellSuccess, event.getMoney(), 0)));
             return;
         }
         double tax = event.getMoney() * TheWorldShopMainClass.WORLD_CONFIG.getTax();
         LoadMoney loadMoney = new LoadMoney(item.getMoneyType());
-        if(loadMoney.myMoney(player) >= tax){
-            loadMoney.reduceMoney(player,tax);
-
-        }else{
-            player.sendMessage(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&r "+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.playerMoneyError,TheWorldShopMainClass.WORLD_CONFIG.getMoneyTypeName(item.getMoneyType()))));
+        if (loadMoney.myMoney(player) < tax) {
+            player.sendMessage(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&r " + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.playerMoneyError, TheWorldShopMainClass.WORLD_CONFIG.getMoneyTypeName(item.getMoneyType()))));
             event.setCancelled();
             return;
         }
 
-        if(TheWorldShopMainClass.SELL_MANAGER.getPlayerSellCount(player.getName()) <
+        loadMoney.reduceMoney(player, tax);
+
+        if (TheWorldShopMainClass.SELL_MANAGER.getPlayerSellCount(player.getName()) <
                 TheWorldShopMainClass.WORLD_CONFIG.getPlayerSellMax()) {
             player.getInventory().removeItem(item.getDefaultItem());
-            player.sendMessage(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&r "+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellSuccess,event.getMoney(),tax)));
-        }else{
-            player.sendMessage(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&r "+"&c"+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellMaxError)));
+
+            TheWorldShopMainClass.MAIN_INSTANCE.save();
+            player.sendMessage(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&r " + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellSuccess, event.getMoney(), tax)));
+        } else {
+            player.sendMessage(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&r " + "&c" + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellMaxError)));
             event.setCancelled();
         }
     }
 
     @EventHandler
-    public void onPlayerFormRespondedEvent(PlayerFormRespondedEvent event){
+    public void onPlayerFormRespondedEvent(PlayerFormRespondedEvent event) {
         Player player = event.getPlayer();
-        if(event.getFormID() == MONEY_UI_NUMBER){
-            if(event.wasClosed()){
+        if (event.getFormID() == MONEY_UI_NUMBER) {
+            if (event.wasClosed()) {
                 return;
             }
-            if(SELL_ITEM.containsKey(player)){
+            if (SELL_ITEM.containsKey(player)) {
                 Item i = LastInventoryItem.formItem(SELL_ITEM.get(player));
                 SELL_ITEM.remove(player);
                 int limit = -1;
-                String number = ((FormResponseCustom)event.getResponse()).getInputResponse(0);
+                String number = ((FormResponseCustom) event.getResponse()).getInputResponse(0);
                 boolean isRemove = false;
-                MoneySellItem.MoneyType type = MoneySellItem.MoneyType.valueOf(((FormResponseCustom)event.getResponse()).getDropdownResponse(1).getElementContent());
+                MoneySellItem.MoneyType type = MoneySellItem.MoneyType.valueOf(((FormResponseCustom) event.getResponse()).getDropdownResponse(1).getElementContent());
 
-                if(player.isOp()){
-                    isRemove = ((FormResponseCustom)event.getResponse()).getToggleResponse(2);
+                if (player.isOp()) {
+                    isRemove = ((FormResponseCustom) event.getResponse()).getToggleResponse(2);
                     try {
                         limit = Integer.parseInt(((FormResponseCustom) event.getResponse()).getInputResponse(3));
-                    }catch (Exception ignore){}
+                    } catch (Exception ignore) {
+                    }
                 }
 
                 double d;
                 try {
                     d = Double.parseDouble(number);
-                    if(d > 0){
-                        if(d < TheWorldShopMainClass.WORLD_CONFIG.getMoneyMin() ||
-                                d > TheWorldShopMainClass.WORLD_CONFIG.getMoneyMax()){
-                            player.sendMessage(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&c "+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellMoneyNotInArray,TheWorldShopMainClass.WORLD_CONFIG.getMoneyMax(),TheWorldShopMainClass.WORLD_CONFIG.getMoneyMin())));
+                    if (d > 0) {
+                        if (d < TheWorldShopMainClass.WORLD_CONFIG.getMoneyMin() ||
+                                d > TheWorldShopMainClass.WORLD_CONFIG.getMoneyMax()) {
+                            player.sendMessage(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&c " + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellMoneyNotInArray, TheWorldShopMainClass.WORLD_CONFIG.getMoneyMax(), TheWorldShopMainClass.WORLD_CONFIG.getMoneyMin())));
                             return;
                         }
 
 
-                        if(i.getCount() <= Tool.getItemCount(i,player.getInventory())){
-                            TheWorldShopMainClass.SELL_MANAGER.addSellItem(player, i,type,d,isRemove,limit);
+                        if (i.getCount() <= Tool.getItemCount(i, player.getInventory())) {
+                            TheWorldShopMainClass.SELL_MANAGER.addSellItem(player, i, type, d, isRemove, limit);
 
-                        }else{
-                            player.sendMessage(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&r "+"&c"+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemError)));
+                        } else {
+                            player.sendMessage(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&r " + "&c" + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemError)));
                         }
-                    }else{
-                        player.sendMessage(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&r "+"&c"+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellMoneyInputError)));
+                    } else {
+                        player.sendMessage(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&r " + "&c" + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellMoneyInputError)));
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
-                    player.sendMessage(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&r "+"&c"+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellMoneyInputError)));
+                    player.sendMessage(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&r " + "&c" + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellMoneyInputError)));
                 }
 
             }
@@ -141,68 +143,68 @@ public class ListenerEvent implements Listener {
 
     }
 
-    private void displaySetting(Player player,Item item,PlayerInfoManager playerInfoManager,ItemType type,Inventory inventory){
-        if(type != null) {
+    private void displaySetting(Player player, Item item, PlayerInfoManager playerInfoManager, ItemType type, Inventory inventory) {
+        if (type != null) {
             switch (type) {
                 case SEEK_PLAYER:
-                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB,1,1,player);
-                    if(playerInfoManager.getChosePlayer() == null) {
+                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB, 1, 1, player);
+                    if (playerInfoManager.getChosePlayer() == null) {
                         playerInfoManager.setChosePlayer(item.getCustomName());
                         playerInfoManager.addSettings(type);
-                    }else{
-                        if(item.getCustomName().equalsIgnoreCase(playerInfoManager.getChosePlayer())) {
+                    } else {
+                        if (item.getCustomName().equalsIgnoreCase(playerInfoManager.getChosePlayer())) {
                             playerInfoManager.setChosePlayer(null);
                             playerInfoManager.addSettings(type);
-                        }else{
+                        } else {
                             playerInfoManager.setChosePlayer(item.getCustomName());
                         }
                     }
                     inventory.setContents(DisplayPanel.getPlayerPanel(playerInfoManager));
                     break;
                 case MONEY_SUB_ITEM:
-                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB,1,1,player);
-                    if(playerInfoManager.getMoneyType() == null){
+                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB, 1, 1, player);
+                    if (playerInfoManager.getMoneyType() == null) {
                         playerInfoManager.setMoneyType(MoneySellItem.MoneyType.valueOf(item.getCustomName()));
                         playerInfoManager.addSettings(type);
-                    }else{
-                        if(playerInfoManager.getMoneyType() == MoneySellItem.MoneyType.valueOf(item.getCustomName())){
+                    } else {
+                        if (playerInfoManager.getMoneyType() == MoneySellItem.MoneyType.valueOf(item.getCustomName())) {
                             playerInfoManager.setMoneyType(null);
                             playerInfoManager.addSettings(type);
-                        }else{
+                        } else {
                             playerInfoManager.setMoneyType(MoneySellItem.MoneyType.valueOf(item.getCustomName()));
                         }
                     }
                     inventory.setContents(DisplayPanel.getMoneyPanel(playerInfoManager));
                     break;
                 case SEEK_ITEM:
-                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB,1,1,player);
-                    if(playerInfoManager.getChoseItem() == null){
+                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB, 1, 1, player);
+                    if (playerInfoManager.getChoseItem() == null) {
                         playerInfoManager.setChoseItem(item);
                         playerInfoManager.addSettings(type);
-                    }else{
-                        if(playerInfoManager.getChoseItem().equals(item,true,false)){
+                    } else {
+                        if (playerInfoManager.getChoseItem().equals(item, true, false)) {
                             playerInfoManager.setChoseItem(null);
                             playerInfoManager.addSettings(type);
-                        }else{
+                        } else {
                             playerInfoManager.setChoseItem(item);
                         }
                     }
                     inventory.setContents(DisplayPanel.getItemPanel(playerInfoManager));
                     break;
                 case HIDE_LIMIT:
-                    if(playerInfoManager.isSetting(ItemType.ONLY_DISPLAY_LIMIT)){
+                    if (playerInfoManager.isSetting(ItemType.ONLY_DISPLAY_LIMIT)) {
                         playerInfoManager.addSettings(ItemType.ONLY_DISPLAY_LIMIT);
                     }
                     playerInfoManager.addSettings(type);
-                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB,1,1,player);
+                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB, 1, 1, player);
                     inventory.setContents(DisplayPanel.getSettingPanel(playerInfoManager));
                     break;
                 case ONLY_DISPLAY_LIMIT:
-                    if(playerInfoManager.isSetting(ItemType.HIDE_LIMIT)){
+                    if (playerInfoManager.isSetting(ItemType.HIDE_LIMIT)) {
                         playerInfoManager.addSettings(ItemType.HIDE_LIMIT);
                     }
                     playerInfoManager.addSettings(type);
-                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB,1,1,player);
+                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB, 1, 1, player);
                     inventory.setContents(DisplayPanel.getSettingPanel(playerInfoManager));
                     break;
                 case PLAYER_SELL:
@@ -210,77 +212,79 @@ public class ListenerEvent implements Listener {
                 case ORDER:
                 case SYSTEM_SELL:
                     playerInfoManager.addSettings(type);
-                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB,1,1,player);
+                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB, 1, 1, player);
                 case SETTING:
                     inventory.setContents(DisplayPanel.getSettingPanel(playerInfoManager));
                     break;
 
-                default:break;
+                default:
+                    break;
             }
         }
     }
-    private void reset(){
-        for(Map.Entry<Player,ChestInventoryPanel> panelEntry:TheWorldShopMainClass.CLICK_PANEL.entrySet()){
+
+    private void reset() {
+        for (Map.Entry<Player, ChestInventoryPanel> panelEntry : TheWorldShopMainClass.CLICK_PANEL.entrySet()) {
             PlayerInfoManager manager = PlayerInfoManager.getInstance(panelEntry.getKey().getName());
-            if(LOOK_MYSELF.contains(panelEntry.getKey())){
+            if (LOOK_MYSELF.contains(panelEntry.getKey())) {
                 panelEntry.getValue().setContents(DisplayPanel.getPlayerItems(manager));
-            }else{
+            } else {
                 panelEntry.getValue().setContents(DisplayPanel.getItems(manager));
             }
 
         }
     }
 
-    private void display(Player player,Item item,PlayerInfoManager playerInfoManager,ItemType type,Inventory inventory){
-        if(type != null){
-            switch (type){
+    private void display(Player player, Item item, PlayerInfoManager playerInfoManager, ItemType type, Inventory inventory) {
+        if (type != null) {
+            switch (type) {
                 case LAST:
-                    player.level.addSound(player,Sound.ITEM_BOOK_PAGE_TURN,1,1,player);
-                    if(item.getCount() == 2){
+                    player.level.addSound(player, Sound.ITEM_BOOK_PAGE_TURN, 1, 1, player);
+                    if (item.getCount() == 2) {
                         playerInfoManager.setPage(1);
                         displayLookPanel(player, playerInfoManager, inventory);
                         return;
                     }
                     playerInfoManager.setPage(playerInfoManager.getPage() - 1);
-                    if(LOOK_PLAYERS.contains(player)){
+                    if (LOOK_PLAYERS.contains(player)) {
                         inventory.setContents(DisplayPanel.getPlayerPanel(playerInfoManager));
                         break;
                     }
-                    if(LOOK_ITEMS.contains(player)){
+                    if (LOOK_ITEMS.contains(player)) {
                         inventory.setContents(DisplayPanel.getItemPanel(playerInfoManager));
                         break;
                     }
-                    if(LOOK_MONEY_TYPE.contains(player)){
+                    if (LOOK_MONEY_TYPE.contains(player)) {
                         inventory.setContents(DisplayPanel.getMoneyPanel(playerInfoManager));
                         break;
                     }
-                    if(LOOK_MYSELF.contains(player)){
+                    if (LOOK_MYSELF.contains(player)) {
                         inventory.setContents(DisplayPanel.getPlayerItems(playerInfoManager));
                         break;
                     }
                     inventory.setContents(DisplayPanel.getItems(playerInfoManager));
                     break;
                 case NEXT:
-                    player.level.addSound(player,Sound.ITEM_BOOK_PAGE_TURN,1,1,player);
-                    if(item.getCount() == 2){
+                    player.level.addSound(player, Sound.ITEM_BOOK_PAGE_TURN, 1, 1, player);
+                    if (item.getCount() == 2) {
                         playerInfoManager.setPage(TheWorldShopMainClass.SELL_MANAGER.getMaxPage());
                         displayLookPanel(player, playerInfoManager, inventory);
                         break;
                     }
                     playerInfoManager.setPage(playerInfoManager.getPage() + 1);
-                    if(LOOK_PLAYERS.contains(player)){
+                    if (LOOK_PLAYERS.contains(player)) {
                         inventory.setContents(DisplayPanel.getPlayerPanel(playerInfoManager));
                         break;
                     }
-                    if(LOOK_ITEMS.contains(player)){
+                    if (LOOK_ITEMS.contains(player)) {
                         inventory.setContents(DisplayPanel.getItemPanel(playerInfoManager));
                         break;
                     }
-                    if(LOOK_MONEY_TYPE.contains(player)){
+                    if (LOOK_MONEY_TYPE.contains(player)) {
                         inventory.setContents(DisplayPanel.getMoneyPanel(playerInfoManager));
                         break;
                     }
-                    if(LOOK_MYSELF.contains(player)){
+                    if (LOOK_MYSELF.contains(player)) {
                         inventory.setContents(DisplayPanel.getPlayerItems(playerInfoManager));
                         break;
                     }
@@ -294,7 +298,7 @@ public class ListenerEvent implements Listener {
                     LOOK_ITEMS.remove(player);
                     LOOK_MONEY_TYPE.remove(player);
                 case REFRESH:
-                    if(LOOK_MYSELF.contains(player)){
+                    if (LOOK_MYSELF.contains(player)) {
                         inventory.setContents(DisplayPanel.getPlayerItems(playerInfoManager));
                         break;
                     }
@@ -321,24 +325,23 @@ public class ListenerEvent implements Listener {
                     inventory.setContents(DisplayPanel.getPlayerPanel(playerInfoManager));
                     break;
                 case INVENTORY_ITEM:
-                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB,1,1,player);
+                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB, 1, 1, player);
                     inventory.close(player);
-                    SELL_ITEM.put(player,item.clone());
+                    SELL_ITEM.put(player, item.clone());
                     FormWindowCustom custom = new FormWindowCustom(TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemWindowsTitle));
                     custom.addElement(new ElementInput(TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemWindowsInputInfo)));
                     ArrayList<String> moneyType = new ArrayList<>();
-                    for(MoneySellItem.MoneyType moneyType1: MoneySellItem.MoneyType.values()){
-                        if(LoadMoney.isEnable(moneyType1)){
+                    for (MoneySellItem.MoneyType moneyType1 : MoneySellItem.MoneyType.values()) {
+                        if (LoadMoney.isEnable(moneyType1)) {
                             moneyType.add(moneyType1.name());
                         }
                     }
-                    custom.addElement(new ElementDropdown(TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemWindowsDropDownInfo),moneyType));
-                    if(player.isOp()){
+                    custom.addElement(new ElementDropdown(TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemWindowsDropDownInfo), moneyType));
+                    if (player.isOp()) {
                         custom.addElement(new ElementToggle(TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemWindowsToggleInfo)));
                         custom.addElement(new ElementInput(TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemWindowsLimit)));
-
                     }
-                    player.showFormWindow(custom,MONEY_UI_NUMBER);
+                    player.showFormWindow(custom, MONEY_UI_NUMBER);
                     break;
                 case MONEY_TYPE:
                     LOOK_MONEY_TYPE.add(player);
@@ -349,9 +352,9 @@ public class ListenerEvent implements Listener {
                     inventory.setContents(DisplayPanel.getItemPanel(playerInfoManager));
                     break;
                 case SELL:
-                    ChoseByItemEvent event1 = new ChoseByItemEvent(player,ShopItem.getShopItemByItem(item));
+                    ChoseByItemEvent event1 = new ChoseByItemEvent(player, ShopItem.getShopItemByItem(item));
                     Server.getInstance().getPluginManager().callEvent(event1);
-                    if(event1.isCancelled()){
+                    if (event1.isCancelled()) {
                         return;
                     }
                     //刷新所有玩家界面
@@ -359,50 +362,51 @@ public class ListenerEvent implements Listener {
                     break;
                 case MONEY_ITEM:
                     //item为处理过的
-                    SellItemEvent event = new SellItemEvent(player,item);
+                    SellItemEvent event = new SellItemEvent(player, item);
                     Server.getInstance().getPluginManager().callEvent(event);
-                    if(event.isCancelled()){
+                    if (event.isCancelled()) {
                         return;
                     }
                     inventory.setContents(DisplayPanel.inventorySellItemPanel(player));
                     break;
-                default:break;
+                default:
+                    break;
             }
         }
     }
 
     @EventHandler
-    public void onItemSell(SellItemEvent event){
+    public void onItemSell(SellItemEvent event) {
         Player player = event.getPlayer();
         Item sellItem = event.getItem();
 
-        if(!SELL_LOCK.containsKey(player)){
+        if (!SELL_LOCK.containsKey(player)) {
             SELL_LOCK.put(player, sellItem);
             event.setCancelled();
-            player.getLevel().addSound(player.getPosition(),Sound
-                    .MOB_VILLAGER_NO,1,1,player);
+            player.getLevel().addSound(player.getPosition(), Sound
+                    .MOB_VILLAGER_NO, 1, 1, player);
             player.sendActionBar(TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemClickAgain));
             return;
         }
         Item i = SELL_LOCK.get(player);
 
-        if(i.equals(sellItem,true,true)){
+        if (i.equals(sellItem, true, true)) {
             SELL_LOCK.remove(player);
             PlayerSellItemManager manager = TheWorldShopMainClass.PLAYER_SELL.
                     get(TheWorldShopMainClass.PLAYER_SELL.
                             indexOf(PlayerSellItemManager.getInstance(player.getName())));
             Item last = MoneyItem.formItem(i);
-            if(Tool.getItemCount(last,player.getInventory()) >= last.getCount()){
+            if (Tool.getItemCount(last, player.getInventory()) >= last.getCount()) {
                 player.getInventory().removeItem(last);
                 double m = TheWorldShopMainClass.MONEY_ITEM.mathMoney(last);
                 MoneySellItem.MoneyType type = TheWorldShopMainClass.MONEY_ITEM.getMoneyTypeName(last);
-                new LoadMoney(type).addMoney(player,m);
-                player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB,1,1,player);
-                player.sendMessage(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&c "+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemSuccess,m,TheWorldShopMainClass.WORLD_CONFIG.getMoneyTypeName(type))));
+                new LoadMoney(type).addMoney(player, m);
+                player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB, 1, 1, player);
+                player.sendMessage(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&c " + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemSuccess, m, TheWorldShopMainClass.WORLD_CONFIG.getMoneyTypeName(type))));
 
             }
             manager.getSellItems().remove(last);
-        }else{
+        } else {
             SELL_LOCK.remove(player);
             event.setCancelled();
         }
@@ -411,20 +415,20 @@ public class ListenerEvent implements Listener {
 
 
     private void displayLookPanel(Player player, PlayerInfoManager playerInfoManager, Inventory inventory) {
-        if(LOOK_PLAYERS.contains(player)){
+        if (LOOK_PLAYERS.contains(player)) {
             inventory.setContents(DisplayPanel.getPlayerPanel(playerInfoManager));
             return;
         }
-        if(LOOK_ITEMS.contains(player)){
+        if (LOOK_ITEMS.contains(player)) {
             inventory.setContents(DisplayPanel.getItemPanel(playerInfoManager));
             return;
         }
-        if(LOOK_MONEY_TYPE.contains(player)){
+        if (LOOK_MONEY_TYPE.contains(player)) {
             inventory.setContents(DisplayPanel.getMoneyPanel(playerInfoManager));
             return;
         }
 
-        if(LOOK_MYSELF.contains(player)){
+        if (LOOK_MYSELF.contains(player)) {
             inventory.setContents(DisplayPanel.getPlayerItems(playerInfoManager));
             return;
         }
@@ -436,14 +440,14 @@ public class ListenerEvent implements Listener {
         InventoryTransaction transaction = event.getTransaction();
         for (InventoryAction action : transaction.getActions()) {
             for (Inventory inventory : transaction.getInventories()) {
-                if(inventory instanceof ChestInventoryPanel) {
+                if (inventory instanceof ChestInventoryPanel) {
                     event.setCancelled();
-                    for(Player player: inventory.getViewers()) {
+                    for (Player player : inventory.getViewers()) {
                         Item item = action.getSourceItem();
                         if (item.hasCompoundTag() && item.getNamedTag().contains(ShopItem.TAG + "tag")) {
                             PlayerInfoManager playerInfoManager = PlayerInfoManager.getInstance(player.getName());
                             ItemType type = Tool.getItemType(item);
-                            display(player,item,playerInfoManager,type,inventory);
+                            display(player, item, playerInfoManager, type, inventory);
                         }
                     }
                     break;
@@ -453,101 +457,101 @@ public class ListenerEvent implements Listener {
     }
 
     @EventHandler
-    public void onBuy(ChoseByItemEvent event){
+    public void onBuy(ChoseByItemEvent event) {
         ShopItem shopItem = event.getItem();
         Player player = event.getPlayer();
         LoadMoney loadMoney = new LoadMoney(shopItem.getMoneyType());
-        if(player.getName().equalsIgnoreCase(shopItem.getSellPlayer())){
-            if(!BUY_LOCK.containsKey(player)) {
-                BUY_LOCK.put(player,shopItem);
+        if (player.getName().equalsIgnoreCase(shopItem.getSellPlayer())) {
+            if (!BUY_LOCK.containsKey(player)) {
+                BUY_LOCK.put(player, shopItem);
                 event.setCancelled();
-                player.getLevel().addSound(player.getPosition(),Sound
-                .MOB_VILLAGER_NO,1,1,player);
+                player.getLevel().addSound(player.getPosition(), Sound
+                        .MOB_VILLAGER_NO, 1, 1, player);
                 player.sendActionBar(TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemClickRemoveAgain));
                 return;
             }
         }
-        if(!BUY_LOCK.containsKey(player)){
+        if (!BUY_LOCK.containsKey(player)) {
             BUY_LOCK.put(player, shopItem);
             event.setCancelled();
-            player.getLevel().addSound(player.getPosition(),Sound
-                    .MOB_VILLAGER_NO,1,1,player);
+            player.getLevel().addSound(player.getPosition(), Sound
+                    .MOB_VILLAGER_NO, 1, 1, player);
             player.sendActionBar(TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.sellItemClickBuyAgain));
             return;
         }
 
         ShopItem click = BUY_LOCK.get(player);
-        if(click.equals(shopItem)){
+        if (click.equals(shopItem)) {
             BUY_LOCK.remove(player);
             double sellMoney = shopItem.getSellMoney();
-            if(!shopItem.isRemove()){
-                if(TheWorldShopMainClass.WORLD_CONFIG.getTax() > 0) {
+            if (!shopItem.isRemove()) {
+                if (TheWorldShopMainClass.WORLD_CONFIG.getTax() > 0) {
                     sellMoney = (sellMoney * TheWorldShopMainClass.WORLD_CONFIG.getTax()) + sellMoney;
                 }
             }
-            PlayerBuyItemEvent event1 = new PlayerBuyItemEvent(player,sellMoney,shopItem.getDefaultItem());
+            PlayerBuyItemEvent event1 = new PlayerBuyItemEvent(player, sellMoney, shopItem.getDefaultItem());
             Server.getInstance().getPluginManager().callEvent(event1);
-            if(event1.isCancelled()){
+            if (event1.isCancelled()) {
                 event.setCancelled();
                 return;
             }
             sellMoney = event1.getMoney();
-            if(player.getName().equalsIgnoreCase(shopItem.getSellPlayer())){
-                if(player.getInventory().canAddItem(event1.getItem())) {
+            if (player.getName().equalsIgnoreCase(shopItem.getSellPlayer())) {
+                if (player.getInventory().canAddItem(event1.getItem())) {
                     TheWorldShopMainClass.SELL_MANAGER.removeItem(shopItem);
-                }else{
-                    player.sendActionBar("&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&c "+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.playerInventoryError));
-                    player.getLevel().addSound(player.getPosition(),Sound
-                            .MOB_VILLAGER_NO,1,1,player);
+                } else {
+                    player.sendActionBar("&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&c " + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.playerInventoryError));
+                    player.getLevel().addSound(player.getPosition(), Sound
+                            .MOB_VILLAGER_NO, 1, 1, player);
                     event.setCancelled();
                     return;
                 }
-                player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB,1,1,player);
+                player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB, 1, 1, player);
                 player.getInventory().addItem(event1.getItem());
                 return;
             }
 
             //限购
-            if(!TheWorldShopMainClass.PLAYER_DATA.chunkBuyItem(player.getName(),shopItem)){
-                player.getLevel().addSound(player.getPosition(),Sound
-                        .MOB_VILLAGER_NO,1,1,player);
-                player.sendActionBar(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&r "+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.playerLimitError,shopItem.limit)));
+            if (!TheWorldShopMainClass.PLAYER_DATA.chunkBuyItem(player.getName(), shopItem)) {
+                player.getLevel().addSound(player.getPosition(), Sound
+                        .MOB_VILLAGER_NO, 1, 1, player);
+                player.sendActionBar(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&r " + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.playerLimitError, shopItem.limit)));
                 event.setCancelled();
                 return;
             }
 
-            if(loadMoney.myMoney(player) >= sellMoney){
-                if(player.getInventory().canAddItem(shopItem.getDefaultItem())){
+            if (loadMoney.myMoney(player) >= sellMoney) {
+                if (player.getInventory().canAddItem(shopItem.getDefaultItem())) {
                     player.getInventory().addItem(shopItem.getDefaultItem());
-                    if(!shopItem.isRemove()) {
+                    if (!shopItem.isRemove()) {
                         TheWorldShopMainClass.SELL_MANAGER.removeItem(shopItem);
                     }
-                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB,1,1,player);
-                    player.sendMessage(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&c "+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.buyItemSuccess,sellMoney,TheWorldShopMainClass.WORLD_CONFIG.getMoneyTypeName(shopItem.getMoneyType()))));
+                    player.getLevel().addSound(player.getPosition(), Sound.RANDOM_ORB, 1, 1, player);
+                    player.sendMessage(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&c " + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.buyItemSuccess, sellMoney, TheWorldShopMainClass.WORLD_CONFIG.getMoneyTypeName(shopItem.getMoneyType()))));
 
-                }else{
-                    player.getLevel().addSound(player.getPosition(),Sound
-                            .MOB_VILLAGER_NO,1,1,player);
-                    player.sendActionBar(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&r "+"&c"+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.playerInventoryError)));
+                } else {
+                    player.getLevel().addSound(player.getPosition(), Sound
+                            .MOB_VILLAGER_NO, 1, 1, player);
+                    player.sendActionBar(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&r " + "&c" + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.playerInventoryError)));
                     event.setCancelled();
                     return;
                 }
                 String target = shopItem.getSellPlayer();
-                if(!shopItem.isRemove()) {
-                    loadMoney.addMoney(target,shopItem.getSellMoney());
+                if (!shopItem.isRemove()) {
+                    loadMoney.addMoney(target, shopItem.getSellMoney());
                 }
-                loadMoney.reduceMoney(player,sellMoney);
+                loadMoney.reduceMoney(player, sellMoney);
 
-            }else{
-                player.getLevel().addSound(player.getPosition(),Sound
-                        .MOB_VILLAGER_NO,1,1,player);
-                player.sendActionBar(TextFormat.colorize('&',"&7[&r"+TheWorldShopMainClass.WORLD_CONFIG.getTitle()+"&7]&r "+TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.playerMoneyError,TheWorldShopMainClass.WORLD_CONFIG.getMoneyTypeName(shopItem.getMoneyType()))));
+            } else {
+                player.getLevel().addSound(player.getPosition(), Sound
+                        .MOB_VILLAGER_NO, 1, 1, player);
+                player.sendActionBar(TextFormat.colorize('&', "&7[&r" + TheWorldShopMainClass.WORLD_CONFIG.getTitle() + "&7]&r " + TheWorldShopMainClass.language.getLang(TheWorldShopMainClass.language.playerMoneyError, TheWorldShopMainClass.WORLD_CONFIG.getMoneyTypeName(shopItem.getMoneyType()))));
                 event.setCancelled();
             }
-        }else{
+        } else {
             BUY_LOCK.remove(player);
-            player.getLevel().addSound(player.getPosition(),Sound
-                    .MOB_VILLAGER_NO,1,1,player);
+            player.getLevel().addSound(player.getPosition(), Sound
+                    .MOB_VILLAGER_NO, 1, 1, player);
             event.setCancelled();
         }
 

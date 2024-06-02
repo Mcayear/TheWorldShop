@@ -110,11 +110,7 @@ public class TheWorldShopMainClass extends PluginBase {
     public void save(){
         if(SELL_MANAGER != null) {
             SELL_MANAGER.save();
-        }
-        if(SELL_MANAGER != null) {
             CUSTOM_ITEM.save();
-        }
-        if(SELL_MANAGER != null) {
             MONEY_ITEM.save();
         }
         if(PLAYER_DATA != null){
