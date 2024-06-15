@@ -8,10 +8,7 @@ import org.badfish.theworldshop.TheWorldShopMainClass;
 import org.badfish.theworldshop.utils.Tool;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author BadFish
@@ -78,10 +75,11 @@ public class ShopItem  {
 
     public static ShopItem formMap(Map<?,?> map){
         try {
-            Item i = Item.fromString(map.get("id").toString());
+            Item i;
             if(map.containsKey("item")){
-                i = NBTIO.getItemHelper(NBTIO.read(map.get("item").toString().getBytes(StandardCharsets.UTF_8)));
+                i = NBTIO.getItemHelper(NBTIO.read(Base64.getDecoder().decode((String) map.get("item"))));
             }else{
+                i = Item.fromString(map.get("id").toString());
                 i.setCount(Integer.parseInt(map.get("count").toString()));
                 String tag = map.get("tag").toString();
 
@@ -96,7 +94,7 @@ public class ShopItem  {
             if(i.getId() == 0){
                 return null;
             }
-//
+
             UUID uuid = UUID.randomUUID();
             if(map.containsKey("uuid")){
                 uuid = UUID.fromString(map.get("uuid").toString());

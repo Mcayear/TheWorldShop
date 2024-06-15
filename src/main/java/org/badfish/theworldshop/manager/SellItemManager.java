@@ -293,7 +293,7 @@ public class SellItemManager {
             map = new LinkedHashMap<>();
             try {
                 CompoundTag compoundTag = NBTIO.putItemHelper(shopItem.getDefaultItem());
-                String by = new String(NBTIO.write(compoundTag), StandardCharsets.UTF_8);
+                String by = Base64.getEncoder().encodeToString(NBTIO.write(compoundTag));
                 map.put("item", by);
             } catch (Exception ignore) {
                 map.put("id", shopItem.getDefaultItem().getId() + ":" + shopItem.getDefaultItem().getDamage());
