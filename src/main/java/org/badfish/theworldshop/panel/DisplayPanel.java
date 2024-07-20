@@ -194,10 +194,6 @@ public class DisplayPanel implements InventoryHolder {
                     return ((Ornament) RcRPGMain.loadOrnament.get(itemName)).getConfig().get("tradable", false);
                 }
                 break;
-            case "magic":
-                if (RcRPGMain.loadMagic.containsKey(itemName)) {
-                    return ((Magic) RcRPGMain.loadMagic.get(itemName)).getConfig().get("tradable", false);
-                }
         }
 
         if (tag.contains("yamlName") && tag.contains("isCon")) {
