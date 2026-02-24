@@ -124,13 +124,10 @@ public class ShopItem  {
         CompoundTag tag = item.getNamedTag();
         if(tag != null){
             if(tag.contains(TAG+"tag") && tag.getString(TAG+"type").equalsIgnoreCase(ItemType.SELL.getName())){
-                Item def = Item.get(item.getId(),item.getDamage());
+                Item def = Item.get(0);
                 def.setCount(item.getCount());
                 if(tag.contains(TAG+"defaultItem")){
-                    byte[] tagForm = Tool.hexStringToBytes(tag.getString(TAG+"defaultItem"));
-                    if(tagForm != null){
-                        def.setNamedTag(Item.parseCompoundTag(tagForm));
-                    }
+                    def = NBTIO.getItemHelper(tag.getCompound(TAG+"defaultItem"));
                 }
                 UUID uuid = UUID.randomUUID();
                 if(tag.contains(TAG+"uuid")){
@@ -152,9 +149,7 @@ public class ShopItem  {
 
     public Item toItem(String displayPlayerName){
         ArrayList<String> lore = new ArrayList<>(Arrays.asList(shopItem.getLore()));
-        for(int i = 0;i < lore.size();i++){
-            lore.set(i,lore.get(i).replace("${playerLimitCount}",TheWorldShopMainClass.PLAYER_DATA.getBuyCount(displayPlayerName,this)+""));
-        }
+        lore.replaceAll(s -> s.replace("${playerLimitCount}", TheWorldShopMainClass.PLAYER_DATA.getBuyCount(displayPlayerName, this) + ""));
         shopItem.setLore(lore.toArray(new String[0]));
         return shopItem;
     }
@@ -205,12 +200,7 @@ public class ShopItem  {
         tag.putDouble(TAG+"money",sellMoney);
         tag.putString(TAG+"moneyType",moneyType.name());
         tag.putBoolean(TAG+"isRemove",isRemove);
-        if(defaultItem.hasCompoundTag()) {
-            String b = Tool.bytesToHexString(defaultItem.getCompoundTag());
-            if(b != null) {
-                tag.putString(TAG + "defaultItem", b);
-            }
-        }
+        tag.putCompound(TAG+"defaultItem",NBTIO.putItemHelper(defaultItem));
         item.shopItem.setCompoundTag(tag);
         return item;
     }

@@ -10,6 +10,7 @@ import cn.nukkit.entity.Entity;
 import cn.nukkit.inventory.Inventory;
 import cn.nukkit.inventory.InventoryHolder;
 import cn.nukkit.item.Item;
+import cn.nukkit.scheduler.PluginTask;
 import cn.nukkit.item.ItemBookWritten;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.utils.TextFormat;
@@ -76,7 +77,7 @@ public class DisplayPanel implements InventoryHolder {
             }
         }
         int maxPage = 1;
-        if (shopItems.size() > 0) {
+        if(!shopItems.isEmpty()) {
             maxPage = SellItemManager.mathShopItemPage(shopItems);
             if (page > maxPage) {
                 page = maxPage;
@@ -471,7 +472,13 @@ public class DisplayPanel implements InventoryHolder {
         panel.setContents(itemMap);
         panel.id = Entity.entityCount++;
         inventory = panel;
-        player.addWindow(panel);
+
+        Server.getInstance().getScheduler().scheduleDelayedTask(TheWorldShopMainClass.MAIN_INSTANCE, new PluginTask<TheWorldShopMainClass>(TheWorldShopMainClass.MAIN_INSTANCE) {
+            @Override
+            public void onRun(int i) {
+                player.addWindow(panel);
+            }
+        },10);
 
     }
 
@@ -483,7 +490,13 @@ public class DisplayPanel implements InventoryHolder {
         panel.id = Entity.entityCount++;
         TheWorldShopMainClass.CLICK_PANEL.put(player, panel);
         inventory = panel;
-        player.addWindow(panel);
+        Server.getInstance().getScheduler().scheduleDelayedTask(TheWorldShopMainClass.MAIN_INSTANCE, new PluginTask<TheWorldShopMainClass>(TheWorldShopMainClass.MAIN_INSTANCE) {
+            @Override
+            public void onRun(int i) {
+                player.addWindow(panel);
+            }
+        },10);
+
     }
 
     @Override
